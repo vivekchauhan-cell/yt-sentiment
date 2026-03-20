@@ -437,14 +437,15 @@ async function fetchVideos(uploadsPlaylistId,maxResults,apiKey){
 async function fetchComments(videoId,apiKey){
   try{
     const data=await ytGet("/commentThreads",{part:"snippet",videoId,maxResults:100,order:"relevance",textFormat:"plainText"},apiKey);
-    return (data.items||[]).map(item=>item.snippet.topLevelComment.snippet.textDisplay).filter(t=>t&&t.trim().length>2);
+    const comments=(data.items||[]).map(item=>item.snippet.topLevelComment.snippet.textDisplay).filter(t=>t&&t.trim().length>2);
+    return {comments, status:"ok", fetched:comments.length};
   }catch(e){
-    if(e.message.includes("disabled")) return [];
-    throw e;
+    if(e.message.includes("disabled")||e.message.includes("403")) return {comments:[], status:"disabled", fetched:0};
+    return {comments:[], status:"error", fetched:0, error:e.message};
   }
 }
 
-async function analyzeWithClaude(videoTitle,comments){
+async function analyzeWithClaude(videoTitle,comments,attempt=1){
   if(comments.length===0) return null;
   const sample=comments.slice(0,80);
   const prompt=`Analyze these ${sample.length} YouTube comments for the video "${videoTitle}".
@@ -465,11 +466,31 @@ Rules: 5 positive keywords, 4 negative keywords, 4 topics max, flag max 3 toxic 
       messages:[{role:"user",content:prompt}]
     })
   });
-  if(!res.ok) throw new Error("Claude proxy error "+res.status);
+  if(!res.ok){
+    if(attempt<3){
+      await new Promise(r=>setTimeout(r,2000*attempt));
+      return analyzeWithClaude(videoTitle,comments,attempt+1);
+    }
+    throw new Error("Claude proxy error "+res.status);
+  }
   const data=await res.json();
-  if(data.error) throw new Error(data.error.message||JSON.stringify(data.error));
+  if(data.error){
+    if(attempt<3){
+      await new Promise(r=>setTimeout(r,2000*attempt));
+      return analyzeWithClaude(videoTitle,comments,attempt+1);
+    }
+    throw new Error(data.error.message||JSON.stringify(data.error));
+  }
   const raw=data.content.map(b=>b.text||"").join("");
-  return JSON.parse(raw.replace(/```json|```/g,"").trim());
+  try{
+    return JSON.parse(raw.replace(/```json|```/g,"").trim());
+  }catch(e){
+    if(attempt<3){
+      await new Promise(r=>setTimeout(r,1500));
+      return analyzeWithClaude(videoTitle,comments,attempt+1);
+    }
+    throw new Error("Failed to parse Claude response");
+  }
 }
 
 async function startAnalysis(){
@@ -509,9 +530,12 @@ async function startAnalysis(){
     for(let i=0;i<videos.length;i++){
       const v=videos[i];
       const pct=20+Math.round((i/videos.length)*35);
-      setProgress(pct,`Fetching: "${v.title.slice(0,40)}..."`);
-      const comments=await fetchComments(v.videoId,apiKey);
-      videosWithComments.push({...v,comments});
+      setProgress(pct,`Fetching comments: "${v.title.slice(0,40)}..."`);
+      const result=await fetchComments(v.videoId,apiKey);
+      if(result.status==="disabled") log(`Comments disabled: "${v.title.slice(0,35)}"`, "err");
+      else if(result.status==="error") log(`Error fetching: "${v.title.slice(0,35)}"`, "err");
+      else log(`Fetched ${result.fetched} comments: "${v.title.slice(0,35)}"`, "ok");
+      videosWithComments.push({...v, comments:result.comments, fetchedCount:result.fetched, commentStatus:result.status});
     }
     setProgress(55,"Fetched all comments. Running AI analysis...");
 
@@ -520,13 +544,19 @@ async function startAnalysis(){
       const v=videosWithComments[i];
       const pct=55+Math.round((i/videosWithComments.length)*38);
       if(v.comments.length===0){
-        setProgress(pct,`Skipping (comments disabled): "${v.title.slice(0,35)}..."`);
+        setProgress(pct,`Skipping (${v.commentStatus}): "${v.title.slice(0,35)}..."`);
         results.push({...v,analysis:null});
         continue;
       }
       setProgress(pct,`Analyzing: "${v.title.slice(0,40)}..."`);
-      const analysis=await analyzeWithClaude(v.title,v.comments);
-      results.push({...v,analysis});
+      try{
+        const analysis=await analyzeWithClaude(v.title,v.comments);
+        results.push({...v,analysis});
+        log(`Done: "${v.title.slice(0,35)}"`, "ok");
+      }catch(e){
+        log(`Analysis failed: "${v.title.slice(0,30)}" — ${e.message}`, "err");
+        results.push({...v,analysis:null,analysisError:e.message});
+      }
     }
 
     allVideoData=results;
@@ -619,7 +649,7 @@ function renderDashboard(results,channel){
   else unique.forEach(c=>{const d=document.createElement("div");d.className="flagged-item";d.textContent=c.length>110?c.slice(0,110)+"…":c;flaggedList.appendChild(d);});
 
   ["summary-section","charts-section","videos-section"].forEach(id=>document.getElementById(id).style.display="block");
-  renderTable(analyzed,sortKey);
+  renderTable(results,sortKey);
 }
 
 function renderKwBars(id,keywords,color){
@@ -636,6 +666,7 @@ function renderKwBars(id,keywords,color){
 
 function renderTable(data,sort){
   const sorted=[...data].sort((a,b)=>{
+    if(!a.analysis&&!b.analysis) return 0;
     if(!a.analysis) return 1; if(!b.analysis) return -1;
     if(sort==="net") return b.analysis.summary.netScore-a.analysis.summary.netScore;
     if(sort==="neg") return(b.analysis.summary.negative/b.analysis.summary.total)-(a.analysis.summary.negative/a.analysis.summary.total);
@@ -647,7 +678,16 @@ function renderTable(data,sort){
   const tbody=document.getElementById("table-body"); tbody.innerHTML="";
   if(!filtered.length){tbody.innerHTML='<tr><td colspan="6" class="no-data">No videos match your search.</td></tr>';return;}
   filtered.forEach(v=>{
-    if(!v.analysis) return;
+    const date=new Date(v.publishedAt).toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"});
+    const thumbHtml=v.thumbnail?`<img class="video-thumb" src="${v.thumbnail}" alt="" onerror="this.style.display='none'">`:'<div class="video-thumb-placeholder">▶</div>';
+    const tr=document.createElement("tr");
+
+    if(!v.analysis){
+      const reason=v.commentStatus==="disabled"?"Comments disabled":v.analysisError?"Analysis failed":"No comments";
+      tr.innerHTML=`<td><div class="video-thumb-cell">${thumbHtml}<div><div class="video-title-text" title="${v.title}">${v.title}</div><div class="video-date">${date}</div></div></div></td><td class="tbl-num" style="color:var(--muted)">${v.fetchedCount||0}</td><td colspan="4" style="font-family:var(--font-mono);font-size:11px;color:var(--muted);font-style:italic">${reason}</td>`;
+      tbody.appendChild(tr); return;
+    }
+
     const s=v.analysis.summary; const t=v.analysis.toxicity;
     const total=s.positive+s.neutral+s.negative;
     const posPct=Math.round(s.positive/total*100);
@@ -655,9 +695,8 @@ function renderTable(data,sort){
     const negPct=100-posPct-neuPct;
     const moodClass=s.netScore>=70?"pos":s.netScore<=40?"neg":"neu";
     const toxClass=t.level?.toLowerCase()||"low";
-    const date=new Date(v.publishedAt).toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"});
-    const tr=document.createElement("tr");
-    tr.innerHTML=`<td><div class="video-thumb-cell">${v.thumbnail?`<img class="video-thumb" src="${v.thumbnail}" alt="" onerror="this.style.display='none'">`:'<div class="video-thumb-placeholder">▶</div>'}<div><div class="video-title-text" title="${v.title}">${v.title}</div><div class="video-date">${date}</div></div></div></td><td class="tbl-num">${s.total}</td><td><div class="sentiment-mini-bar" style="width:120px"><div class="segment" style="width:${posPct}%;background:#22d692"></div><div class="segment" style="width:${neuPct}%;background:#f0b429"></div><div class="segment" style="width:${negPct}%;background:#f25c5c"></div></div><div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-top:3px">${posPct}% · ${negPct}%</div></td><td class="tbl-num" style="color:${s.netScore>=70?"var(--pos)":s.netScore<=40?"var(--neg)":"var(--neu)"}">${s.netScore}</td><td><span class="badge ${moodClass}">${s.overallMood}</span></td><td><span class="tox-pill ${toxClass}"><span class="tox-dot"></span>${t.level}</span></td>`;
+    const fetchedLabel=v.fetchedCount?`${v.fetchedCount} fetched`:"";
+    tr.innerHTML=`<td><div class="video-thumb-cell">${thumbHtml}<div><div class="video-title-text" title="${v.title}">${v.title}</div><div class="video-date">${date}</div></div></div></td><td class="tbl-num">${s.total}<div style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">${fetchedLabel}</div></td><td><div class="sentiment-mini-bar" style="width:120px"><div class="segment" style="width:${posPct}%;background:#22d692"></div><div class="segment" style="width:${neuPct}%;background:#f0b429"></div><div class="segment" style="width:${negPct}%;background:#f25c5c"></div></div><div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-top:3px">${posPct}% · ${negPct}%</div></td><td class="tbl-num" style="color:${s.netScore>=70?"var(--pos)":s.netScore<=40?"var(--neg)":"var(--neu)"}">${s.netScore}</td><td><span class="badge ${moodClass}">${s.overallMood}</span></td><td><span class="tox-pill ${toxClass}"><span class="tox-dot"></span>${t.level}</span></td>`;
     tbody.appendChild(tr);
   });
 }
@@ -665,9 +704,9 @@ function renderTable(data,sort){
 function sortTable(key){
   sortKey=key;
   ["net","neg","date"].forEach(k=>{document.getElementById("sort-"+k)?.classList.toggle("active",k===key);});
-  if(allVideoData.length) renderTable(allVideoData.filter(v=>v.analysis),sortKey);
+  if(allVideoData.length) renderTable(allVideoData,sortKey);
 }
-function filterTable(){if(allVideoData.length) renderTable(allVideoData.filter(v=>v.analysis),sortKey);}
+function filterTable(){if(allVideoData.length) renderTable(allVideoData,sortKey);}
 function fmtNum(n){if(n>=1000000) return(n/1000000).toFixed(1)+"M";if(n>=1000) return(n/1000).toFixed(1)+"K";return String(n);}
 </script>
 </body>
