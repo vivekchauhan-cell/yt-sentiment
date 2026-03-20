@@ -483,7 +483,7 @@ Rules: 5 positive keywords, 4 negative keywords, 4 topics max, flag max 3 toxic 
   }
   const raw=data.content.map(b=>b.text||"").join("");
   try{
-    return JSON.parse(raw.replace(/```json|```/g,"").trim());
+    const parsed=JSON.parse(raw.replace(/```json|```/g,"").trim()); if(parsed?.summary) parsed.summary.netScore=Math.min(100,Math.max(0,parsed.summary.netScore)); return parsed;
   }catch(e){
     if(attempt<3){
       await new Promise(r=>setTimeout(r,1500));
