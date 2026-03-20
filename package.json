@@ -1,0 +1,6 @@
+{
+  "name": "yt-sentiment-analyzer",
+  "version": "1.0.0",
+  "description": "YouTube Channel Sentiment Analyzer powered by Claude AI",
+  "engines": { "node": ">=18" }
+}
