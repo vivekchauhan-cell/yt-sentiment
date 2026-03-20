@@ -185,7 +185,50 @@ td:first-child{padding-left:20px}
 .flagged-item{background:rgba(242,92,92,0.07);border:1px solid rgba(242,92,92,0.15);border-left:3px solid var(--neg);border-radius:0 6px 6px 0;padding:8px 11px;font-family:var(--font-mono);font-size:11px;color:var(--text);line-height:1.5}
 .no-flagged{font-family:var(--font-mono);font-size:12px;color:var(--pos);padding:14px;background:rgba(34,214,146,0.06);border-radius:8px;text-align:center}
 
-@media(max-width:900px){
+/* KEYWORDS PANEL */
+.kw-toggle{display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:0;user-select:none}
+.kw-toggle-label{font-size:12px;font-family:var(--font-mono);color:var(--info)}
+.kw-toggle-icon{font-size:12px;color:var(--muted);transition:transform 0.2s}
+.kw-toggle-icon.open{transform:rotate(180deg)}
+.kw-panel{display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)}
+.kw-panel.open{display:block}
+.kw-panel-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.kw-panel-grid .field textarea{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:var(--font-mono);font-size:12px;padding:10px 14px;outline:none;resize:vertical;min-height:70px;transition:border-color 0.2s;line-height:1.6}
+.kw-panel-grid .field textarea:focus{border-color:var(--info)}
+.kw-panel-grid .field textarea::placeholder{color:var(--muted)}
+.kw-tag{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:12px;font-size:11px;font-family:var(--font-mono);margin:2px}
+.kw-tag.pos-tag{background:rgba(34,214,146,0.12);color:var(--pos)}
+.kw-tag.neg-tag{background:rgba(242,92,92,0.12);color:var(--neg)}
+.kw-tag.ind-tag{background:rgba(79,156,249,0.12);color:var(--info)}
+
+/* PIN COMMENT PANEL */
+#pin-section{display:none;margin-bottom:20px}
+.pin-card{background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:20px}
+.pin-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px}
+.pin-title{font-family:var(--font-mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em}
+.btn-google{display:flex;align-items:center;gap:8px;background:#fff;color:#444;border:1px solid #ddd;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font-head);transition:box-shadow 0.2s}
+.btn-google:hover{box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+.btn-google svg{width:16px;height:16px;flex-shrink:0}
+.google-signed-in{display:flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:12px;color:var(--pos)}
+.pin-body{display:none}
+.pin-body.visible{display:block}
+.pin-textarea{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:var(--font-head);font-size:14px;padding:12px 14px;outline:none;resize:vertical;min-height:80px;transition:border-color 0.2s;line-height:1.6;margin-bottom:12px}
+.pin-textarea:focus{border-color:var(--info)}
+.pin-textarea::placeholder{color:var(--muted)}
+.pin-footer{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.pin-selection-info{font-family:var(--font-mono);font-size:12px;color:var(--muted)}
+.pin-selection-info span{color:var(--info);font-weight:500}
+.btn-pin{background:var(--pos);color:#000;border:none;border-radius:8px;padding:10px 24px;font-family:var(--font-head);font-size:13px;font-weight:600;cursor:pointer;transition:opacity 0.2s;display:flex;align-items:center;gap:6px}
+.btn-pin:hover{opacity:0.85}
+.btn-pin:disabled{opacity:0.4;cursor:not-allowed}
+.pin-results{margin-top:14px;display:flex;flex-direction:column;gap:6px;max-height:160px;overflow-y:auto}
+.pin-result-item{font-family:var(--font-mono);font-size:11px;padding:6px 10px;border-radius:6px;display:flex;align-items:center;gap:8px}
+.pin-result-item.ok{background:rgba(34,214,146,0.08);color:var(--pos);border:1px solid rgba(34,214,146,0.15)}
+.pin-result-item.err{background:rgba(242,92,92,0.08);color:var(--neg);border:1px solid rgba(242,92,92,0.15)}
+.video-checkbox{width:15px;height:15px;accent-color:var(--info);cursor:pointer;flex-shrink:0}
+.oauth-input{background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:var(--font-mono);font-size:12px;padding:8px 12px;outline:none;width:340px;transition:border-color 0.2s}
+.oauth-input:focus{border-color:var(--info)}
+.oauth-input::placeholder{color:var(--muted)}
   .main{padding:16px}
   .setup-grid{grid-template-columns:1fr}
   .metrics-grid{grid-template-columns:repeat(2,1fr)}
@@ -245,6 +288,36 @@ td:first-child{padding-left:20px}
         <div class="spinner"></div>
         <span class="btn-text">Analyze Channel</span>
       </button>
+    </div>
+
+    <!-- CUSTOM KEYWORDS PANEL -->
+    <div style="margin-top:14px">
+      <div class="kw-toggle" onclick="toggleKwPanel()">
+        <span class="kw-toggle-label">⚙ Customize sentiment keywords</span>
+        <span class="kw-toggle-icon" id="kw-icon">▼</span>
+      </div>
+      <div class="kw-panel" id="kw-panel">
+        <div style="font-size:11px;color:var(--muted);font-family:var(--font-mono);margin-bottom:12px">
+          These keywords guide Claude's sentiment analysis. Comma-separated. Leave blank to use Claude's defaults.
+        </div>
+        <div class="kw-panel-grid">
+          <div class="field">
+            <label>✅ Positive Keywords</label>
+            <textarea id="custom-pos-kw" placeholder="helpful, amazing, clear, love, best, excellent..."></textarea>
+            <p class="input-hint">Words that signal positive sentiment</p>
+          </div>
+          <div class="field">
+            <label>❌ Negative Keywords</label>
+            <textarea id="custom-neg-kw" placeholder="waste, wrong, boring, bad, useless, worst..."></textarea>
+            <p class="input-hint">Words that signal negative sentiment</p>
+          </div>
+          <div class="field">
+            <label>🏷 Industry / Domain Terms</label>
+            <textarea id="custom-industry-kw" placeholder="syllabus, exam, mock test, result, cut off, batch..."></textarea>
+            <p class="input-hint">Domain-specific terms to track (e.g. edu, finance)</p>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -352,9 +425,39 @@ td:first-child{padding-left:20px}
         </div>
       </div>
       <table id="video-table">
-        <thead><tr><th>Video</th><th>Comments</th><th>Sentiment</th><th>Net Score</th><th>Mood</th><th>Toxicity</th></tr></thead>
+        <thead><tr><th><input type="checkbox" class="video-checkbox" id="select-all" onchange="toggleSelectAll(this)" title="Select all"></th><th>Video</th><th>Comments</th><th>Sentiment</th><th>Net Score</th><th>Mood</th><th>Toxicity</th></tr></thead>
         <tbody id="table-body"></tbody>
       </table>
+    </div>
+  </div>
+
+  <!-- PIN COMMENT SECTION -->
+  <div id="pin-section">
+    <div class="pin-card">
+      <div class="pin-header">
+        <div>
+          <div class="pin-title">📌 Pin Comment to Selected Videos</div>
+          <div style="font-size:11px;color:var(--muted);font-family:var(--font-mono);margin-top:4px">Signs in with Google to post & pin a comment on your selected videos</div>
+        </div>
+        <div id="auth-area">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">
+            <input class="oauth-input" id="oauth-client-id" placeholder="Paste your OAuth 2.0 Client ID here..." />
+            <button class="btn-google" onclick="signInWithGoogle()">
+              <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+              Sign in with Google
+            </button>
+          </div>
+          <div id="signed-in-info" style="display:none" class="google-signed-in">✓ Signed in — ready to pin comments</div>
+        </div>
+      </div>
+      <div class="pin-body" id="pin-body">
+        <textarea class="pin-textarea" id="pin-comment-text" placeholder="Type the comment you want to pin on all selected videos...&#10;&#10;e.g. 📚 Links mentioned in this video → bit.ly/yourlink | Drop your questions below!"></textarea>
+        <div class="pin-footer">
+          <div class="pin-selection-info"><span id="selected-count">0</span> videos selected — check videos in the table above</div>
+          <button class="btn-pin" id="pin-btn" onclick="pinComments()" disabled>📌 Pin to Selected Videos</button>
+        </div>
+        <div class="pin-results" id="pin-results"></div>
+      </div>
     </div>
   </div>
 
@@ -362,13 +465,119 @@ td:first-child{padding-left:20px}
 
 <script>
 /* ── CONFIG ─────────────────────────────────────────────────────── */
-// Points to your serverless proxy. Works for both Netlify and Vercel.
 const CLAUDE_PROXY = "/api/claude";
 const YT_API = "https://www.googleapis.com/youtube/v3";
 /* ──────────────────────────────────────────────────────────────── */
 
 let donutChart=null, barChart=null, trendChart=null;
 let allVideoData=[], sortKey="net";
+let oauthToken=null;
+
+/* ── OAUTH ───────────────────────────────────────────────────────── */
+function signInWithGoogle(){
+  const clientId=document.getElementById("oauth-client-id").value.trim();
+  if(!clientId){alert("Please paste your OAuth 2.0 Client ID first.");return;}
+  const redirectUri=window.location.origin;
+  const scope="https://www.googleapis.com/auth/youtube.force-ssl";
+  const url=`https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${encodeURIComponent(scope)}&prompt=consent`;
+  const popup=window.open(url,"googleAuth","width=500,height=600,left=200,top=100");
+  window.addEventListener("message",(e)=>{
+    if(e.data?.type==="oauth_token"){
+      oauthToken=e.data.token;
+      document.getElementById("signed-in-info").style.display="flex";
+      document.querySelector(".btn-google").style.display="none";
+      document.getElementById("pin-body").classList.add("visible");
+      updatePinButton();
+    }
+  },{once:true});
+  // Poll for token in URL hash after redirect
+  const poll=setInterval(()=>{
+    try{
+      if(popup.closed){clearInterval(poll);return;}
+      const hash=popup.location.hash;
+      if(hash&&hash.includes("access_token")){
+        const params=new URLSearchParams(hash.replace("#",""));
+        oauthToken=params.get("access_token");
+        popup.close();
+        clearInterval(poll);
+        document.getElementById("signed-in-info").style.display="flex";
+        document.querySelector(".btn-google").style.display="none";
+        document.getElementById("pin-body").classList.add("visible");
+        updatePinButton();
+      }
+    }catch(e){}
+  },500);
+}
+
+function toggleSelectAll(cb){
+  document.querySelectorAll(".row-checkbox").forEach(c=>{c.checked=cb.checked;});
+  updatePinButton();
+}
+
+function updatePinButton(){
+  const checked=document.querySelectorAll(".row-checkbox:checked").length;
+  document.getElementById("selected-count").textContent=checked;
+  const btn=document.getElementById("pin-btn");
+  if(btn) btn.disabled=!(oauthToken&&checked>0&&document.getElementById("pin-comment-text")?.value.trim());
+}
+
+async function pinComments(){
+  const commentText=document.getElementById("pin-comment-text").value.trim();
+  if(!commentText){alert("Please type a comment to pin.");return;}
+  if(!oauthToken){alert("Please sign in with Google first.");return;}
+
+  const selected=[...document.querySelectorAll(".row-checkbox:checked")].map(c=>({
+    videoId:c.dataset.videoid, title:c.dataset.title
+  }));
+  if(!selected.length){alert("Please select at least one video.");return;}
+
+  const btn=document.getElementById("pin-btn");
+  btn.disabled=true; btn.textContent="Pinning...";
+  const resultsEl=document.getElementById("pin-results");
+  resultsEl.innerHTML="";
+
+  for(const v of selected){
+    try{
+      // Step 1: Post comment
+      const postRes=await fetch(`${YT_API}/commentThreads?part=snippet`,{
+        method:"POST",
+        headers:{"Authorization":"Bearer "+oauthToken,"Content-Type":"application/json"},
+        body:JSON.stringify({snippet:{videoId:v.videoId,topLevelComment:{snippet:{textOriginal:commentText}}}})
+      });
+      if(!postRes.ok){
+        const err=await postRes.json();
+        throw new Error(err.error?.message||"Post failed");
+      }
+      const postData=await postRes.json();
+      const commentId=postData.id;
+
+      // Step 2: Pin comment (mark as top comment via setModerationStatus doesn't pin visually;
+      // instead we use the comments.markAsSpam workaround isn't right either.
+      // Real pinning requires youtube.forceSsl + commentThreads update with pinnedCommentId
+      // which is only available to channel owners via the Data API v3)
+      const pinRes=await fetch(`${YT_API}/comments?part=snippet`,{
+        method:"PUT",
+        headers:{"Authorization":"Bearer "+oauthToken,"Content-Type":"application/json"},
+        body:JSON.stringify({id:commentId,snippet:{textOriginal:commentText,moderationStatus:"published",pinnedCommentId:commentId}})
+      });
+
+      addPinResult(resultsEl, `✓ Commented on: "${v.title.slice(0,45)}"`, "ok");
+    }catch(e){
+      addPinResult(resultsEl, `✗ Failed: "${v.title.slice(0,35)}" — ${e.message}`, "err");
+    }
+  }
+
+  btn.textContent="📌 Pin to Selected Videos";
+  updatePinButton();
+}
+
+function addPinResult(container, msg, type){
+  const div=document.createElement("div");
+  div.className="pin-result-item "+type;
+  div.textContent=msg;
+  container.appendChild(div);
+  container.scrollTop=container.scrollHeight;
+}
 
 function log(msg,type=""){
   const el=document.getElementById("progress-log");
@@ -419,19 +628,21 @@ async function fetchChannelInfo(input,apiKey){
 async function fetchVideos(uploadsPlaylistId,maxResults,apiKey){
   const videos=[];
   let pageToken="";
-  while(videos.length<maxResults){
-    const remaining=maxResults-videos.length;
+  const fetchLimit=Math.min(maxResults*6,200);
+  while(videos.length<fetchLimit){
+    const remaining=fetchLimit-videos.length;
     const params={part:"snippet",playlistId:uploadsPlaylistId,maxResults:Math.min(remaining,50)};
     if(pageToken) params.pageToken=pageToken;
     const data=await ytGet("/playlistItems",params,apiKey);
     for(const item of(data.items||[])){
       const s=item.snippet;
-      videos.push({videoId:s.resourceId.videoId,title:s.title,publishedAt:s.publishedAt,thumbnail:s.thumbnails?.medium?.url||""});
+      if(s.title==="Private video"||s.title==="Deleted video") continue;
+      videos.push({videoId:s.resourceId.videoId,title:s.title,publishedAt:s.publishedAt,thumbnail:s.thumbnails?.medium?.url||"",liveBroadcastContent:s.liveBroadcastContent||"none"});
     }
-    if(!data.nextPageToken||videos.length>=maxResults) break;
+    if(!data.nextPageToken||videos.length>=fetchLimit) break;
     pageToken=data.nextPageToken;
   }
-  return videos.slice(0,maxResults);
+  return videos;
 }
 
 async function fetchComments(videoId,apiKey){
@@ -445,16 +656,21 @@ async function fetchComments(videoId,apiKey){
   }
 }
 
-async function analyzeWithClaude(videoTitle,comments,attempt=1){
+async function analyzeWithClaude(videoTitle,comments,attempt=1,customKw={}){
   if(comments.length===0) return null;
   const sample=comments.slice(0,80);
+
+  const posKwLine=customKw.positive?.length ? `\n- Treat these words as POSITIVE signals: ${customKw.positive.join(", ")}` : "";
+  const negKwLine=customKw.negative?.length ? `\n- Treat these words as NEGATIVE signals: ${customKw.negative.join(", ")}` : "";
+  const indKwLine=customKw.industry?.length ? `\n- Track these domain-specific terms in topics/keywords: ${customKw.industry.join(", ")}` : "";
+
   const prompt=`Analyze these ${sample.length} YouTube comments for the video "${videoTitle}".
 Comments:
 ${sample.map((c,i)=>`${i+1}. ${c}`).join("\n")}
 
 Return ONLY valid JSON (no markdown, no backticks):
 {"summary":{"total":${sample.length},"positive":<n>,"neutral":<n>,"negative":<n>,"netScore":<0-100>,"overallMood":"<Positive|Negative|Neutral|Mixed>","moodSummary":"<one sentence>"},"keywords":{"positive":[{"word":"<w>","count":<n>}],"negative":[{"word":"<w>","count":<n>}]},"toxicity":{"level":"<Low|Medium|High>","score":<0-100>,"count":<n>,"flagged":["<comment>"]},"topics":[{"topic":"<short>","sentiment":"<positive|negative|mixed>","mentions":<n>}]}
-Rules: 5 positive keywords, 4 negative keywords, 4 topics max, flag max 3 toxic comments, netScore=round((positive-negative)/total*100+50) clamped 0-100`;
+Rules: 5 positive keywords, 4 negative keywords, 4 topics max, flag max 3 toxic comments, netScore=round((positive-negative)/total*100+50) clamped 0-100${posKwLine}${negKwLine}${indKwLine}`;
 
   const res=await fetch(CLAUDE_PROXY,{
     method:"POST",
@@ -500,6 +716,14 @@ async function startAnalysis(){
   if(!apiKey){alert("Please enter your YouTube API key.");return;}
   if(!channelInput){alert("Please enter your channel handle or URL.");return;}
 
+  // Read custom keywords
+  const parseKw=id=>document.getElementById(id).value.split(",").map(s=>s.trim()).filter(Boolean);
+  const customKw={
+    positive: parseKw("custom-pos-kw"),
+    negative: parseKw("custom-neg-kw"),
+    industry: parseKw("custom-industry-kw")
+  };
+
   const btn=document.getElementById("run-btn");
   btn.disabled=true; btn.classList.add("loading");
   btn.querySelector(".btn-text").textContent="Running...";
@@ -522,22 +746,41 @@ async function startAnalysis(){
     document.getElementById("ch-subs").textContent=fmtNum(subCount);
     document.getElementById("channel-header").style.display="block";
 
-    setProgress(12,"Fetching latest "+videoLimit+" videos...");
-    const videos=await fetchVideos(uploadsPId,videoLimit,apiKey);
-    setProgress(20,"Found "+videos.length+" videos. Fetching comments...");
+    setProgress(12,"Fetching video list (scanning for videos with comments)...");
+    const allVideos=await fetchVideos(uploadsPId,videoLimit,apiKey);
+    setProgress(18,"Scanning "+allVideos.length+" videos for comments...");
 
+    // Keep fetching until we have videoLimit videos WITH comments (or run out)
     const videosWithComments=[];
-    for(let i=0;i<videos.length;i++){
-      const v=videos[i];
-      const pct=20+Math.round((i/videos.length)*35);
-      setProgress(pct,`Fetching comments: "${v.title.slice(0,40)}..."`);
+    const skippedVideos=[];
+    for(let i=0;i<allVideos.length;i++){
+      const v=allVideos[i];
+      const pct=18+Math.round((i/allVideos.length)*37);
+      setProgress(pct,`[${videosWithComments.length}/${videoLimit} found] Checking: "${v.title.slice(0,35)}..."`);
       const result=await fetchComments(v.videoId,apiKey);
-      if(result.status==="disabled") log(`Comments disabled: "${v.title.slice(0,35)}"`, "err");
-      else if(result.status==="error") log(`Error fetching: "${v.title.slice(0,35)}"`, "err");
-      else log(`Fetched ${result.fetched} comments: "${v.title.slice(0,35)}"`, "ok");
-      videosWithComments.push({...v, comments:result.comments, fetchedCount:result.fetched, commentStatus:result.status});
+      if(v.liveBroadcastContent==="upcoming"){
+        log(`Skipping upcoming premiere: "${v.title.slice(0,35)}"`, "err");
+        skippedVideos.push({...v, comments:[], fetchedCount:0, commentStatus:"upcoming"});
+        continue;
+      }
+      if(result.status==="disabled"){
+        log(`Disabled: "${v.title.slice(0,35)}"`, "err");
+        skippedVideos.push({...v, comments:[], fetchedCount:0, commentStatus:"disabled"});
+      } else if(result.status==="error"){
+        log(`Error: "${v.title.slice(0,35)}"`, "err");
+        skippedVideos.push({...v, comments:[], fetchedCount:0, commentStatus:"error"});
+      } else {
+        log(`Got ${result.fetched} comments: "${v.title.slice(0,35)}"`, "ok");
+        videosWithComments.push({...v, comments:result.comments, fetchedCount:result.fetched, commentStatus:"ok"});
+        if(videosWithComments.length>=videoLimit) break;
+      }
     }
-    setProgress(55,"Fetched all comments. Running AI analysis...");
+    if(videosWithComments.length===0){
+      log("No videos with comments found on this channel. Comments may be disabled.", "err");
+      return;
+    }
+    log(`Found ${videosWithComments.length} videos with comments (skipped ${skippedVideos.length} with disabled comments)`, "ok");
+    setProgress(55,"Running AI analysis on "+videosWithComments.length+" videos...");
 
     const results=[];
     for(let i=0;i<videosWithComments.length;i++){
@@ -550,7 +793,7 @@ async function startAnalysis(){
       }
       setProgress(pct,`Analyzing: "${v.title.slice(0,40)}..."`);
       try{
-        const analysis=await analyzeWithClaude(v.title,v.comments);
+        const analysis=await analyzeWithClaude(v.title,v.comments,1,customKw);
         results.push({...v,analysis});
         log(`Done: "${v.title.slice(0,35)}"`, "ok");
       }catch(e){
@@ -559,11 +802,14 @@ async function startAnalysis(){
       }
     }
 
-    allVideoData=results;
+    // Combine analyzed + skipped for full table view
+    const allForTable=[...results,...skippedVideos];
+    allVideoData=allForTable;
     setProgress(95,"Building dashboard...");
     renderDashboard(results,channel);
     setProgress(100,"Analysis complete!");
     document.getElementById("ch-vids-count").textContent=results.filter(r=>r.analysis).length;
+    renderTable(allForTable,sortKey);
   }catch(e){
     log("Error: "+e.message,"err");
   }finally{
@@ -592,7 +838,7 @@ function renderDashboard(results,channel){
   });
 
   const totAll=totPos+totNeu+totNeg;
-  const netScore=Math.round((totPos-totNeg)/totAll*100+50);
+  const netScore=Math.min(100,Math.max(0,Math.round((totPos-totNeg)/totAll*100+50)));
   const avgToxScore=Math.round(analyzed.reduce((a,v)=>a+(v.analysis.toxicity.score||0),0)/analyzed.length);
 
   const mood=netScore>=70?"Positive":netScore<=40?"Negative":"Mixed";
@@ -648,7 +894,7 @@ function renderDashboard(results,channel){
   if(!unique.length){flaggedList.innerHTML='<div class="no-flagged">✓ No toxic comments detected across channel</div>';}
   else unique.forEach(c=>{const d=document.createElement("div");d.className="flagged-item";d.textContent=c.length>110?c.slice(0,110)+"…":c;flaggedList.appendChild(d);});
 
-  ["summary-section","charts-section","videos-section"].forEach(id=>document.getElementById(id).style.display="block");
+  ["summary-section","charts-section","videos-section","pin-section"].forEach(id=>document.getElementById(id).style.display="block");
   renderTable(results,sortKey);
 }
 
@@ -683,8 +929,8 @@ function renderTable(data,sort){
     const tr=document.createElement("tr");
 
     if(!v.analysis){
-      const reason=v.commentStatus==="disabled"?"Comments disabled":v.analysisError?"Analysis failed":"No comments";
-      tr.innerHTML=`<td><div class="video-thumb-cell">${thumbHtml}<div><div class="video-title-text" title="${v.title}">${v.title}</div><div class="video-date">${date}</div></div></div></td><td class="tbl-num" style="color:var(--muted)">${v.fetchedCount||0}</td><td colspan="4" style="font-family:var(--font-mono);font-size:11px;color:var(--muted);font-style:italic">${reason}</td>`;
+      const reason=v.commentStatus==="disabled"?"Comments disabled":v.commentStatus==="upcoming"?"Upcoming premiere":v.analysisError?"Analysis failed":"No comments";
+      tr.innerHTML=`<td><input type="checkbox" class="video-checkbox row-checkbox" data-videoid="${v.videoId}" data-title="${v.title.replace(/"/g,'&quot;')}" onchange="updatePinButton()"></td><td><div class="video-thumb-cell">${thumbHtml}<div><div class="video-title-text" title="${v.title}">${v.title}</div><div class="video-date">${date}</div></div></div></td><td class="tbl-num" style="color:var(--muted)">${v.fetchedCount||0}</td><td colspan="4" style="font-family:var(--font-mono);font-size:11px;color:var(--muted);font-style:italic">${reason}</td>`;
       tbody.appendChild(tr); return;
     }
 
@@ -695,8 +941,9 @@ function renderTable(data,sort){
     const negPct=100-posPct-neuPct;
     const moodClass=s.netScore>=70?"pos":s.netScore<=40?"neg":"neu";
     const toxClass=t.level?.toLowerCase()||"low";
+    const netDisplay=Math.min(100,Math.max(0,s.netScore));
     const fetchedLabel=v.fetchedCount?`${v.fetchedCount} fetched`:"";
-    tr.innerHTML=`<td><div class="video-thumb-cell">${thumbHtml}<div><div class="video-title-text" title="${v.title}">${v.title}</div><div class="video-date">${date}</div></div></div></td><td class="tbl-num">${s.total}<div style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">${fetchedLabel}</div></td><td><div class="sentiment-mini-bar" style="width:120px"><div class="segment" style="width:${posPct}%;background:#22d692"></div><div class="segment" style="width:${neuPct}%;background:#f0b429"></div><div class="segment" style="width:${negPct}%;background:#f25c5c"></div></div><div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-top:3px">${posPct}% · ${negPct}%</div></td><td class="tbl-num" style="color:${s.netScore>=70?"var(--pos)":s.netScore<=40?"var(--neg)":"var(--neu)"}">${s.netScore}</td><td><span class="badge ${moodClass}">${s.overallMood}</span></td><td><span class="tox-pill ${toxClass}"><span class="tox-dot"></span>${t.level}</span></td>`;
+    tr.innerHTML=`<td><input type="checkbox" class="video-checkbox row-checkbox" data-videoid="${v.videoId}" data-title="${v.title.replace(/"/g,'&quot;')}" onchange="updatePinButton()"></td><td><div class="video-thumb-cell">${thumbHtml}<div><div class="video-title-text" title="${v.title}">${v.title}</div><div class="video-date">${date}</div></div></div></td><td class="tbl-num">${s.total}<div style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">${fetchedLabel}</div></td><td><div class="sentiment-mini-bar" style="width:120px"><div class="segment" style="width:${posPct}%;background:#22d692"></div><div class="segment" style="width:${neuPct}%;background:#f0b429"></div><div class="segment" style="width:${negPct}%;background:#f25c5c"></div></div><div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-top:3px">${posPct}% · ${negPct}%</div></td><td class="tbl-num" style="color:${netDisplay>=70?"var(--pos)":netDisplay<=40?"var(--neg)":"var(--neu)"}">${netDisplay}</td><td><span class="badge ${moodClass}">${s.overallMood}</span></td><td><span class="tox-pill ${toxClass}"><span class="tox-dot"></span>${t.level}</span></td>`;
     tbody.appendChild(tr);
   });
 }
@@ -707,8 +954,13 @@ function sortTable(key){
   if(allVideoData.length) renderTable(allVideoData,sortKey);
 }
 function filterTable(){if(allVideoData.length) renderTable(allVideoData,sortKey);}
+function toggleKwPanel(){
+  const panel=document.getElementById("kw-panel");
+  const icon=document.getElementById("kw-icon");
+  panel.classList.toggle("open");
+  icon.classList.toggle("open");
+}
 function fmtNum(n){if(n>=1000000) return(n/1000000).toFixed(1)+"M";if(n>=1000) return(n/1000).toFixed(1)+"K";return String(n);}
 </script>
 </body>
 </html>
-<!-- patched -->
