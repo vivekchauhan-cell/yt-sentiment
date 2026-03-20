@@ -483,7 +483,7 @@ Rules: 5 positive keywords, 4 negative keywords, 4 topics max, flag max 3 toxic 
   }
   const raw=data.content.map(b=>b.text||"").join("");
   try{
-    const parsed=JSON.parse(raw.replace(/```json|```/g,"").trim()); if(parsed?.summary) parsed.summary.netScore=Math.min(100,Math.max(0,parsed.summary.netScore)); return parsed;
+    return JSON.parse(raw.replace(/```json|```/g,"").trim());
   }catch(e){
     if(attempt<3){
       await new Promise(r=>setTimeout(r,1500));
@@ -696,7 +696,7 @@ function renderTable(data,sort){
     const moodClass=s.netScore>=70?"pos":s.netScore<=40?"neg":"neu";
     const toxClass=t.level?.toLowerCase()||"low";
     const fetchedLabel=v.fetchedCount?`${v.fetchedCount} fetched`:"";
-    tr.innerHTML=`<td><div class="video-thumb-cell">${thumbHtml}<div><div class="video-title-text" title="${v.title}">${v.title}</div><div class="video-date">${date}</div></div></div></td><td class="tbl-num">${s.total}<div style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">${fetchedLabel}</div></td><td><div class="sentiment-mini-bar" style="width:120px"><div class="segment" style="width:${posPct}%;background:#22d692"></div><div class="segment" style="width:${neuPct}%;background:#f0b429"></div><div class="segment" style="width:${negPct}%;background:#f25c5c"></div></div><div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-top:3px">${posPct}% · ${negPct}%</div></td><td class="tbl-num" style="color:${Math.min(100,Math.max(0,s.netScore))>=70?"var(--pos)":s.netScore<=40?"var(--neg)":"var(--neu)"}">${s.netScore}</td><td><span class="badge ${moodClass}">${s.overallMood}</span></td><td><span class="tox-pill ${toxClass}"><span class="tox-dot"></span>${t.level}</span></td>`;
+    tr.innerHTML=`<td><div class="video-thumb-cell">${thumbHtml}<div><div class="video-title-text" title="${v.title}">${v.title}</div><div class="video-date">${date}</div></div></div></td><td class="tbl-num">${s.total}<div style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">${fetchedLabel}</div></td><td><div class="sentiment-mini-bar" style="width:120px"><div class="segment" style="width:${posPct}%;background:#22d692"></div><div class="segment" style="width:${neuPct}%;background:#f0b429"></div><div class="segment" style="width:${negPct}%;background:#f25c5c"></div></div><div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-top:3px">${posPct}% · ${negPct}%</div></td><td class="tbl-num" style="color:${s.netScore>=70?"var(--pos)":s.netScore<=40?"var(--neg)":"var(--neu)"}">${s.netScore}</td><td><span class="badge ${moodClass}">${s.overallMood}</span></td><td><span class="tox-pill ${toxClass}"><span class="tox-dot"></span>${t.level}</span></td>`;
     tbody.appendChild(tr);
   });
 }
