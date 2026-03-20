@@ -451,7 +451,7 @@ td:first-child{padding-left:20px}
         </div>
       </div>
       <div class="pin-body" id="pin-body">
-        <textarea class="pin-textarea" id="pin-comment-text" placeholder="Type the comment you want to pin on all selected videos...&#10;&#10;e.g. 📚 Links mentioned in this video → bit.ly/yourlink | Drop your questions below!"></textarea>
+        <textarea class="pin-textarea" id="pin-comment-text" oninput="updatePinButton()" placeholder="Type the comment you want to pin on all selected videos...&#10;&#10;e.g. 📚 Links mentioned in this video → bit.ly/yourlink | Drop your questions below!"></textarea>
         <div class="pin-footer">
           <div class="pin-selection-info"><span id="selected-count">0</span> videos selected — check videos in the table above</div>
           <button class="btn-pin" id="pin-btn" onclick="pinComments()" disabled>📌 Pin to Selected Videos</button>
@@ -518,7 +518,12 @@ function updatePinButton(){
   const checked=document.querySelectorAll(".row-checkbox:checked").length;
   document.getElementById("selected-count").textContent=checked;
   const btn=document.getElementById("pin-btn");
-  if(btn) btn.disabled=!(oauthToken&&checked>0&&document.getElementById("pin-comment-text")?.value.trim());
+  if(!btn) return;
+  const hasText=document.getElementById("pin-comment-text")?.value.trim().length>0;
+  const enabled=!!(oauthToken && checked>0 && hasText);
+  btn.disabled=!enabled;
+  btn.style.opacity=enabled?"1":"0.4";
+  btn.style.cursor=enabled?"pointer":"not-allowed";
 }
 
 async function pinComments(){
